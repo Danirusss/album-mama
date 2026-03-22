@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>С Днём Рождения, Мама ♡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Nunito+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #FAFAF8;
+  --card: #FFFFFF;
+  --text: #2E2E2C;
+  --text-soft: #9A9A94;
+  --accent: #C4A882;
+  --accent-pale: #E8DDD0;
+  --accent-glow: rgba(196,168,130,0.15);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'Nunito Sans', system-ui, sans-serif;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+}
+
+/* ═══════════════ COVER ═══════════════ */
+.cover {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 30px;
+  transition: opacity 1s ease, transform 1s ease;
+}
+.cover.gone { opacity: 0; transform: scale(1.08); pointer-events: none; }
+
+.cover-line { width: 50px; height: 1px; background: var(--accent); margin-bottom: 36px; animation: rise 1s ease both 0.2s; }
+.cover h1 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(2.2rem, 8vw, 4rem);
+  text-align: center; line-height: 1.15;
+  letter-spacing: 0.02em;
+  animation: rise 1s ease both 0.4s;
+}
+.cover .sub {
+  font-family: var(--serif); font-weight: 300; font-style: italic;
+  font-size: clamp(0.95rem, 3vw, 1.4rem);
+  color: var(--text-soft); margin-top: 12px;
+  letter-spacing: 0.05em;
+  animation: rise 1s ease both 0.6s;
+}
+.cover-open {
+  margin-top: 56px;
+  background: none; border: 1px solid var(--accent-pale);
+  color: var(--accent);
+  font-family: var(--sans); font-weight: 300;
+  font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 14px 36px; border-radius: 100px;
+  cursor: pointer;
+  animation: rise 1s ease both 0.9s;
+  transition: all 0.35s ease;
+}
+.cover-open:active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cover-year {
+  position: absolute; bottom: max(24px, var(--safe-bottom));
+  font-family: var(--serif); font-weight: 300; font-size: 0.8rem;
+  color: var(--accent-pale); letter-spacing: 0.12em;
+  animation: rise 1s ease both 1.1s;
+}
+
+/* ═══════════════ ALBUM VIEWPORT ═══════════════ */
+.album {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease 0.6s;
+}
+.album.active { opacity: 1; pointer-events: auto; }
+
+/* ── slide track ── */
+.track {
+  flex: 1; min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 20px calc(24px + var(--safe-bottom));
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+.slide.current {
+  opacity: 1; transform: translateX(0);
+  pointer-events: auto;
+}
+.slide.exit-left {
+  opacity: 0; transform: translateX(-60px);
+}
+
+/* ── photo card ── */
+.photo-card {
+  width: 100%;
+  max-width: 380px;
+  flex: 1; min-height: 0;
+  max-height: 68vh;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.photo-area {
+  flex: 1; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px 14px 0;
+  background: var(--card);
+}
+.photo-area img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.photo-area img.visible { opacity: 1; }
+
+/* placeholder when no photo */
+.photo-empty {
+  width: 100%; height: 100%;
+  background: linear-gradient(160deg, #f7f5f0, #ede9e2);
+  border-radius: 6px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px;
+}
+.photo-empty .n { font-family: var(--serif); font-size: 2.6rem; font-weight: 300; color: var(--accent-pale); }
+.photo-empty .t { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft); font-weight: 200; }
+
+.caption-area {
+  padding: 14px 18px 18px;
+  text-align: center;
+}
+.caption-text {
+  font-family: var(--serif); font-style: italic; font-weight: 300;
+  font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+  color: var(--text-soft); line-height: 1.5;
+}
+
+/* ── page counter ── */
+.page-num {
+  margin-top: 16px;
+  font-family: var(--serif); font-weight: 300;
+  font-size: 0.8rem; color: var(--accent-pale);
+  letter-spacing: 0.1em;
+}
+
+/* ── dedication slides ── */
+.dedication {
+  text-align: center;
+  padding: 40px 32px;
+  max-width: 380px;
+}
+.ded-line { width: 36px; height: 1px; background: var(--accent-pale); margin: 0 auto 28px; }
+.dedication h2 {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  line-height: 1.25; margin-bottom: 20px;
+}
+.dedication p {
+  font-family: var(--serif); font-weight: 300; font-style: italic;
+  font-size: clamp(0.9rem, 2.8vw, 1.1rem);
+  color: var(--text-soft); line-height: 1.75;
+}
+.ded-heart {
+  margin-top: 28px;
+  font-size: 1.3rem; color: var(--accent);
+  animation: heartbeat 2.8s ease-in-out infinite;
+}
+
+/* ── bottom bar ── */
+.bottom-bar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px;
+  padding: 10px 20px max(14px, var(--safe-bottom));
+  background: rgba(250,250,248,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+.bar-btn {
+  background: none; border: 1px solid var(--accent-pale);
+  color: var(--text-soft);
+  font-family: var(--sans); font-weight: 300;
+  font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 9px 22px; border-radius: 100px;
+  cursor: pointer; transition: all 0.25s ease;
+  -webkit-user-select: none; user-select: none;
+}
+.bar-btn:active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.bar-btn:disabled { opacity: 0.25; }
+.bar-counter {
+  font-family: var(--serif); font-weight: 300;
+  font-size: 0.8rem; color: var(--text-soft);
+  min-width: 50px; text-align: center;
+}
+
+/* ── progress dots ── */
+.progress {
+  position: fixed; top: max(10px, var(--safe-top)); left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 4px;
+  z-index: 20;
+  opacity: 0; transition: opacity 0.3s;
+}
+.album.active .progress { opacity: 1; }
+.dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent-pale);
+  transition: all 0.35s ease;
+}
+.dot.on { background: var(--accent); transform: scale(1.3); }
+
+/* ── music fab ── */
+.music-fab {
+  position: fixed;
+  bottom: max(70px, calc(50px + var(--safe-bottom)));
+  right: 16px; z-index: 30;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-pale);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10px);
+  display: none; /* shown when music loaded */
+  align-items: center; justify-content: center;
+  cursor: pointer; color: var(--accent);
+  transition: all 0.3s ease;
+  -webkit-user-select: none;
+}
+.music-fab:active { background: var(--accent); color: #fff; }
+.music-fab svg { width: 16px; height: 16px; }
+.music-fab.playing { border-color: var(--accent); }
+.music-fab.visible { display: flex; }
+
+/* ── swipe hint ── */
+.swipe-hint {
+  position: fixed;
+  bottom: max(75px, calc(55px + var(--safe-bottom)));
+  left: 50%; transform: translateX(-50%);
+  font-size: 0.6rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent-pale);
+  font-weight: 200; z-index: 20;
+  animation: rise 0.8s ease both 1.2s;
+  transition: opacity 0.5s ease;
+  white-space: nowrap;
+}
+
+/* ═══════════════ KEYFRAMES ═══════════════ */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+}
+
+/* ═══════════════ DESKTOP FALLBACK ═══════════════ */
+@media (min-width: 768px) {
+  .photo-card { max-width: 420px; max-height: 72vh; border-radius: 16px; }
+  .bottom-bar { padding: 14px 20px 14px; }
+  .bar-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ COVER ═══ -->
+<div class="cover" id="cover">
+  <div class="cover-line"></div>
+  <h1>С Днём Рождения,<br>Мама</h1>
+  <div class="sub">фотоальбом с любовью</div>
+  <button class="cover-open" onclick="openAlbum()">Открыть альбом</button>
+  <div class="cover-year">♡ 2026</div>
+</div>
+
+<!-- ═══ PROGRESS DOTS ═══ -->
+<div class="progress" id="progress"></div>
+
+<!-- ═══ ALBUM ═══ -->
+<div class="album" id="album">
+  <div class="track" id="track"></div>
+  <div class="bottom-bar">
+    <button class="bar-btn" id="prevBtn" onclick="go(-1)">← назад</button>
+    <span class="bar-counter" id="counter">1 / 1</span>
+    <button class="bar-btn" id="nextBtn" onclick="go(1)">далее →</button>
+  </div>
+</div>
+
+<!-- ═══ SWIPE HINT ═══ -->
+<div class="swipe-hint" id="hint">← свайп →</div>
+
+<!-- ═══ MUSIC ═══ -->
+<div class="music-fab" id="musicFab" onclick="toggleMusic()">
+  <svg id="icoPlay" viewBox="0 0 24 24" fill="currentColor"><polygon points="7,4 20,12 7,20"/></svg>
+  <svg id="icoPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+</div>
+
+<audio id="audio" loop preload="auto"></audio>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  НАСТРОЙКА АЛЬБОМА — РЕДАКТИРУЙ ЗДЕСЬ                       ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+// Текст посвящения (первая страница)
+const DEDICATION_TITLE = 'Дорогая Мама';
+const DEDICATION_TEXT = 'Этот альбом — маленькая коллекция\nсчастливых моментов, которые мы пережили вместе.\nКаждая фотография — напоминание о том,\nкак много любви и радости ты подарила.';
+
+// Текст финальной страницы
+const CLOSING_TITLE = 'С любовью,\nнавсегда';
+const CLOSING_TEXT = 'Спасибо, что ты есть.\nС Днём Рождения!';
+
+// ──────────────────────────────────────────
+// ФОТОГРАФИИ: добавляй сюда свои фотографии.
+//
+// Вариант 1 — положи фото в папку "photos" рядом с этим файлом:
+//   { src: 'photos/01.jpg', caption: 'Подпись' }
+//
+// Вариант 2 — используй ссылку на фото в интернете:
+//   { src: 'https://example.com/photo.jpg', caption: 'Подпись' }
+//
+// caption можно оставить пустым: ''
+// ──────────────────────────────────────────
+const PHOTOS = [
+  { src: 'Фотографии/20180706_063427.jpg', caption: 'Сладкий сон маленькой принцессы' },
+  { src: 'Фотографии/2018-07-25 20-56-04.JPG', caption: 'Поездка по Бийску тебя и Миланы' },
+  { src: 'Фотографии/2018-07-26 16-59-22.JPG', caption: 'Красавица в летнем парке' },
+  { src: 'Фотографии/2018-07-26 17-00-12.JPG', caption: 'Солнечная улыбка среди зелени' },
+  { src: 'Фотографии/2018-07-26 17-00-58.JPG', caption: 'Серьёзный взгляд папы и твоя счастливая улыбка' },
+  { src: 'Фотографии/2018-07-26 17-01-11.JPG', caption: 'А вот и папа может улыбнуться' },
+  { src: 'Фотографии/2018-07-26 17-03-35.JPG', caption: 'Вот как надо показывать язык' },
+  { src: 'Фотографии/2018-07-26 17-07-02.JPG', caption: 'Две улыбки — одно счастье' },
+  { src: 'Фотографии/2018-08-25 12-56-28.JPG', caption: 'Папа на охоте' },
+  { src: 'Фотографии/Без имени-topaz-remove.png', caption: 'Выпускной' },
+  { src: 'Фотографии/2019-01-13 17-59-48_1547384322400.JPG', caption: 'Праздник в Шоколаде' },
+  { src: 'Фотографии/2019-05-30 13-40-15_1559199662070.JPG', caption: 'Милана — Единорог' },
+  { src: 'Фотографии/2019-09-08 22-22-40.JPG', caption: 'День города' },
+  { src: 'Фотографии/2021-01-19 17-37-45.JPG', caption: 'Зимние дни' },
+  { src: 'Фотографии/photo_2024-08-28_23-04-43-topaz-dust.jpg', caption: 'Два похожих лица' },
+  { src: 'Фотографии/photo_2024-08-28_23-04-45 (2).jpg', caption: 'Папа в ресторане' },
+  { src: 'Фотографии/photo_2024-08-28_23-04-45.jpg', caption: 'Милана с коктейлем' },
+  { src: 'Фотографии/photo_2025-03-22_18-22-48.jpg', caption: 'Букет на праздник' },
+  { src: 'Фотографии/photo_2025-10-31_17-32-04-topaz.jpg', caption: 'Пляжный отдых' },
+  { src: 'Фотографии/photo_2025-10-31_17-32-31-topaz-dust-face-face-sharpen-upscale-3.1x.jpg', caption: 'Отдых в Турции' },
+  { src: 'Фотографии/photo_2025-10-31_17-32-45-topaz-face-face-denoise-sharpen-lighting-remove-dust-upscale-3.1x.jpg', caption: 'Отдых в Турции' },
+  { src: 'Фотографии/IMG20251016094804.jpg', caption: 'Время поесть' },
+  { src: 'Фотографии/IMG20251017193006.jpg', caption: 'Маленькая кошатница' },
+  { src: 'Фотографии/IMG20251018104154.jpg', caption: 'День в аквапарке' },
+  { src: 'Фотографии/IMG20251018133601.jpg', caption: 'Обед в аквапарке...' },
+  { src: 'Фотографии/IMG20251018135219.jpg', caption: '...А также мороженое' },
+  { src: 'Фотографии/IMG20251209181600.jpg', caption: 'И пара дней в Казахстане' },
+];
+
+// Музыка: укажи путь к mp3 файлу (положи рядом с HTML) или оставь пустым
+const MUSIC_SRC = ''; // например: 'music.mp3'
+
+// ╔══════════════════════════════════════════════════════════════╗
+// ║  КОД АЛЬБОМА — НИЖЕ НЕ ТРОГАЙ                              ║
+// ╚══════════════════════════════════════════════════════════════╝
+
+let cur = 0;
+let total = 0;
+
+function buildSlides() {
+  const track = document.getElementById('track');
+  const progress = document.getElementById('progress');
+  const slides = [];
+
+  // 1 — dedication
+  slides.push(makeDedication(DEDICATION_TITLE, DEDICATION_TEXT));
+
+  // 2..N+1 — photos
+  PHOTOS.forEach((p, i) => slides.push(makePhoto(p, i)));
+
+  // last — closing
+  slides.push(makeDedication(CLOSING_TITLE, CLOSING_TEXT));
+
+  total = slides.length;
+
+  slides.forEach((html, i) => {
+    const div = document.createElement('div');
+    div.className = 'slide' + (i === 0 ? ' current' : '');
+    div.innerHTML = html;
+    track.appendChild(div);
+
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' on' : '');
+    progress.appendChild(dot);
+  });
+
+  // lazy-load first visible image
+  lazyLoad(0);
+  updateUI();
+}
+
+function makeDedication(title, text) {
+  const t = title.replace(/\n/g, '<br>');
+  const p = text.replace(/\n/g, '<br>');
+  return `<div class="dedication">
+    <div class="ded-line"></div>
+    <h2>${t}</h2>
+    <p>${p}</p>
+    <div class="ded-heart">♡</div>
+  </div>`;
+}
+
+function makePhoto(photo, index) {
+  const imgHtml = photo.src
+    ? `<img data-src="${photo.src}" alt="Фото ${index+1}" onload="this.classList.add('visible')">`
+    : `<div class="photo-empty"><span class="n">${index+1}</span><span class="t">фото ${index+1}</span></div>`;
+  return `<div class="photo-card">
+    <div class="photo-area">${imgHtml}</div>
+    <div class="caption-area"><div class="caption-text">${photo.caption}</div></div>
+  </div>
+  <div class="page-num">${index+1} из ${PHOTOS.length}</div>`;
+}
+
+function lazyLoad(idx) {
+  const slides = document.querySelectorAll('.slide');
+  // load current and adjacent
+  [idx - 1, idx, idx + 1].forEach(i => {
+    if (i < 0 || i >= total) return;
+    const img = slides[i].querySelector('img[data-src]');
+    if (img) {
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    }
+  });
+}
+
+function go(dir) {
+  const next = cur + dir;
+  if (next < 0 || next >= total) return;
+
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+
+  slides[cur].className = dir > 0 ? 'slide exit-left' : 'slide';
+  slides[next].className = 'slide current';
+
+  dots[cur].classList.remove('on');
+  dots[next].classList.add('on');
+
+  cur = next;
+  lazyLoad(cur);
+  updateUI();
+
+  // hide swipe hint
+  const hint = document.getElementById('hint');
+  if (hint) hint.style.opacity = '0';
+}
+
+function updateUI() {
+  document.getElementById('prevBtn').disabled = cur === 0;
+  document.getElementById('nextBtn').disabled = cur >= total - 1;
+  document.getElementById('counter').textContent = `${cur + 1} / ${total}`;
+}
+
+// ── Cover ──
+function openAlbum() {
+  document.getElementById('cover').classList.add('gone');
+  document.getElementById('album').classList.add('active');
+  // auto-play music if available
+  if (MUSIC_SRC) tryPlayMusic();
+}
+
+// ── Music ──
+let playing = false;
+function initMusic() {
+  if (!MUSIC_SRC) return;
+  document.getElementById('audio').src = MUSIC_SRC;
+  document.getElementById('musicFab').classList.add('visible');
+}
+function tryPlayMusic() {
+  const a = document.getElementById('audio');
+  a.play().then(() => {
+    playing = true;
+    document.getElementById('icoPlay').style.display = 'none';
+    document.getElementById('icoPause').style.display = 'block';
+    document.getElementById('musicFab').classList.add('playing');
+  }).catch(() => {});
+}
+function toggleMusic() {
+  const a = document.getElementById('audio');
+  if (playing) {
+    a.pause(); playing = false;
+    document.getElementById('icoPlay').style.display = 'block';
+    document.getElementById('icoPause').style.display = 'none';
+    document.getElementById('musicFab').classList.remove('playing');
+  } else {
+    a.play(); playing = true;
+    document.getElementById('icoPlay').style.display = 'none';
+    document.getElementById('icoPause').style.display = 'block';
+    document.getElementById('musicFab').classList.add('playing');
+  }
+}
+
+// ── Touch / Swipe ──
+let tx = 0, ty = 0, swiping = false;
+document.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX;
+  ty = e.touches[0].clientY;
+  swiping = true;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+  if (!swiping) return;
+  swiping = false;
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+    go(dx < 0 ? 1 : -1);
+  }
+});
+
+// ── Keyboard ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') go(1);
+  if (e.key === 'ArrowLeft') go(-1);
+  if (e.key === 'Enter' && !document.getElementById('cover').classList.contains('gone')) openAlbum();
+});
+
+// ── Init ──
+buildSlides();
+initMusic();
+</script>
+</body>
+</html>
